@@ -1,28 +1,30 @@
 package as.leap.sample.auth;
 
-import com.facebook.*;
-
-import as.leap.LASFacebookUtils;
-import as.leap.LASUser;
-import as.leap.LASUserManager;
-import as.leap.callback.SaveCallback;
-import as.leap.exception.LASException;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.facebook.LoginActivity;
-import com.facebook.model.GraphUser;
-import com.facebook.widget.ProfilePictureView;
+import com.facebook.AccessToken;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.login.LoginManager;
+import com.facebook.login.widget.ProfilePictureView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Date;
+
+import as.leap.LASFacebookUtils;
+import as.leap.LASLog;
+import as.leap.LASUser;
+import as.leap.LASUserManager;
+import as.leap.callback.SaveCallback;
+import as.leap.exception.LASException;
+import as.leap.external.social.facebook.FacebookPlatform;
 
 public class UserDetailsActivity extends AppCompatActivity {
 
@@ -48,7 +50,8 @@ public class UserDetailsActivity extends AppCompatActivity {
         mUserDateOfBirthView = (TextView) findViewById(R.id.userDateOfBirth);
         mUserRelationshipView = (TextView) findViewById(R.id.userRelationship);
 
-        findViewById(R.id.logoutButton).setOnClickListener(new View.OnClickListener() {
+        Button logoutButton = (Button) findViewById(R.id.logoutButton);
+        logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onLogoutButtonClicked();
@@ -56,73 +59,55 @@ public class UserDetailsActivity extends AppCompatActivity {
         });
 
         // Fetch Facebook user info if the session is active
-        Session session = Session.getActiveSession();
         LASUser user = LASUser.getCurrentUser();
 
-        if (session == null && LASFacebookUtils.isLinked(user)) {
-            String accessToken = LASFacebookUtils.getPlatform().getAccessToken();
-            String expires = LASFacebookUtils.getPlatform().getExpires();
-
-            TokenCachingStrategy tcs = new SharedPreferencesTokenCachingStrategy(this);
-            Bundle data = tcs.load();
-            TokenCachingStrategy.putToken(data, accessToken);
-            TokenCachingStrategy.putExpirationMilliseconds(data, Long.parseLong(expires));
-            tcs.save(data);
-
-            session = new Session.Builder(this).setApplicationId(App.FACEBOOK_APP_ID).
-                    setTokenCachingStrategy(tcs).build();
-
-            session.openForRead(new Session.OpenRequest(this).setCallback(new Session.StatusCallback() {
-                @Override
-                public void call(Session session, SessionState state, Exception exception) {
-                    if (session.isOpened()) {
-                        makeMeRequest();
-                    }
-                }
-            }));
-            Session.setActiveSession(session);
-        } else if (session != null && session.isOpened()) {
-            makeMeRequest();
+        if (LASFacebookUtils.isLinked(user)) {
+            FacebookPlatform platform = LASFacebookUtils.getPlatform();
+            if (platform == null) return;
+            AccessToken token = new AccessToken(
+                    platform.getAccessToken(),
+                    platform.getApplicationId(),
+                    platform.getPlatformId(),
+                    null,
+                    null,
+                    null,
+                    new Date(Long.valueOf(platform.getExpires())),
+                    null
+            );
+            makeMeRequest(token);
         }
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Session.getActiveSession().onActivityResult(this, requestCode, resultCode, data);
-    }
-
-    private void makeMeRequest() {
-        Request request = Request.newMeRequest(Session.getActiveSession(),
-                new Request.GraphUserCallback() {
+    private void makeMeRequest(AccessToken accessToken) {
+        GraphRequest request = GraphRequest.newMeRequest(accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
                     @Override
-                    public void onCompleted(GraphUser user, Response response) {
+                    public void onCompleted(JSONObject user, GraphResponse response) {
                         if (user != null) {
                             // Create a JSON object to hold the profile info
                             JSONObject userProfile = new JSONObject();
                             try {
+                                System.out.println(user);
+
                                 // Populate the JSON object
-                                userProfile.put("facebookId", user.getId());
-                                userProfile.put("name", user.getName());
-                                if (user.getLocation() != null
-                                        && user.getLocation().getProperty(
-                                        "name") != null) {
-                                    userProfile.put("location", user
-                                            .getLocation().getProperty("name"));
+                                userProfile.put("facebookId", user.optString("id"));
+                                userProfile.put("name", user.optString("name"));
+                                if (user.optJSONObject("location") != null) {
+                                    userProfile.put("location", user.optJSONObject("location").optString("name"));
                                 }
-                                if (user.getProperty("gender") != null) {
+                                if (user.optString("gender") != null) {
                                     userProfile.put("gender",
-                                            user.getProperty("gender"));
+                                            user.optString("gender"));
                                 }
-                                if (user.getBirthday() != null) {
+                                if (user.optString("birthday") != null) {
                                     userProfile.put("birthday",
-                                            user.getBirthday());
+                                            user.optString("birthday"));
                                 }
-                                if (user.getProperty("relationship_status") != null) {
+                                if (user.optString("relationship_status") != null) {
                                     userProfile
                                             .put("relationship_status",
                                                     user
-                                                            .getProperty("relationship_status"));
+                                                            .optString("relationship_status"));
                                 }
 
                                 // Save the user profile info in a user property
@@ -139,7 +124,7 @@ public class UserDetailsActivity extends AppCompatActivity {
                                                 if (exception != null) {
                                                     exception.printStackTrace();
                                                 } else {
-                                                    Log.d(TAG,
+                                                    LASLog.d(TAG,
                                                             "finish saving");
                                                 }
                                             }
@@ -148,22 +133,15 @@ public class UserDetailsActivity extends AppCompatActivity {
                                 // Show the user info
                                 updateViewsWithProfileInfo();
                             } catch (JSONException e) {
-                                Log.d(TAG,
+                                LASLog.e(TAG,
                                         "Error parsing returned user data.");
                             }
 
                         } else if (response.getError() != null) {
-                            if ((response.getError().getCategory() == FacebookRequestError.Category.AUTHENTICATION_RETRY)
-                                    || (response.getError().getCategory() == FacebookRequestError.Category.AUTHENTICATION_REOPEN_SESSION)) {
-                                Log.d(TAG,
-                                        "The facebook session was invalidated.");
-                                onLogoutButtonClicked();
-                            } else {
-                                Log.d(TAG,
-                                        "Some other error: "
-                                                + response.getError()
-                                                .getErrorMessage());
-                            }
+                            LASLog.e(TAG,
+                                    "Some other error: "
+                                            + response.getError()
+                                            .getErrorMessage());
                         }
                     }
                 });
@@ -212,7 +190,7 @@ public class UserDetailsActivity extends AppCompatActivity {
                     mUserRelationshipView.setText("");
                 }
             } catch (JSONException e) {
-                Log.d(TAG,
+                LASLog.d(TAG,
                         "Error parsing saved user data." + e.getMessage());
             }
 
@@ -220,8 +198,11 @@ public class UserDetailsActivity extends AppCompatActivity {
     }
 
     private void onLogoutButtonClicked() {
-        // Log the user out
+        // Log the user out with LAS SDK
         LASUser.logOut();
+
+        // Log the user out with Facebook SDK
+        LoginManager.getInstance().logOut();
 
         finish();
 
@@ -232,7 +213,6 @@ public class UserDetailsActivity extends AppCompatActivity {
     private void startLoginActivity() {
         Intent intent = new Intent(this, LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 }

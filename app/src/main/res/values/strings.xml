@@ -4,7 +4,7 @@
     <string name="app_name">Auth</string>
 
     <!-- facebook app id -->
-    <string name="app_id">replace this with your facebook id</string>
+    <string name="app_id">yourAppId</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>

@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import as.leap.LASFacebookUtils;
+import as.leap.LASLog;
 import as.leap.LASUser;
 import as.leap.callback.LogInCallback;
 import as.leap.exception.LASException;
@@ -52,16 +53,14 @@ public class LoginActivity extends AppCompatActivity {
         LASFacebookUtils.logInInBackground(permissions, this,
                 new LogInCallback<LASUser>() {
                     @Override
-                    public void done(LASUser user, LASException err) {
-                        // LoginActivity.this.progressDialog.dismiss();
-                        if (err != null) {
-                            err.printStackTrace();
+                    public void done(LASUser user, LASException e) {
+                        if (e != null) {
+                            e.printStackTrace();
+                            LASLog.t(e.getMessage());
                             return;
                         }
-                        if (user == null) {
-                            Log.d(TAG,
-                                    "Uh oh. The user cancelled the Facebook login.");
-                        } else if (user.isNew()) {// is new
+
+                        if (user.isNew()) {
                             Log.d(TAG,
                                     "User signed up and logged in through Facebook!");
                             showUserDetailsActivity();
@@ -77,5 +76,6 @@ public class LoginActivity extends AppCompatActivity {
     private void showUserDetailsActivity() {
         Intent intent = new Intent(this, UserDetailsActivity.class);
         startActivity(intent);
+        finish();
     }
 }

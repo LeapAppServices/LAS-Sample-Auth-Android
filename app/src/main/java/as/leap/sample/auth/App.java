@@ -2,6 +2,9 @@ package as.leap.sample.auth;
 
 import android.app.Application;
 
+import com.facebook.FacebookSdk;
+import com.facebook.LoggingBehavior;
+
 import as.leap.LASConfig;
 import as.leap.LASFacebookUtils;
 
@@ -10,8 +13,8 @@ public class App extends Application {
 
     public static final String APP_ID = "Replace this with your App Id";
     public static final String API_KEY = "Replace this with your Rest Key";
-    public static final String FACEBOOK_APP_ID = "Replace this with your facebook app id";
-    public static final String FACEBOOK_SECRET_KEY = "Replace this with your facebook secret key";
+    public static final String FACEBOOK_APP_ID = "Replace this with your Facebook app id";
+    public static final String FACEBOOK_SECRET_KEY = "Replace this with your Facebook secret key";
 
     @Override
     public void onCreate() {
@@ -28,6 +31,9 @@ public class App extends Application {
         // Set your Facebook App Id in strings.xml
         LASFacebookUtils.initialize(FACEBOOK_APP_ID, FACEBOOK_SECRET_KEY);
 
+        //  Using Facebook SDK
+        FacebookSdk.sdkInitialize(this);
+        FacebookSdk.addLoggingBehavior(LoggingBehavior.REQUESTS);
     }
 
 }

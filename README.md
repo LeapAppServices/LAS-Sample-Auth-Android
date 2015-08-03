@@ -1,10 +1,11 @@
 # LAS-Sample-Auth-Android
 
-## 简介
+## Overview
 
-Auth 是 LAS SDK 的一个 Sample，该项目依赖于 LAS 的基础模块。通过该应用你可以学习和了解基于 LAS SDK 的第三方登录并保存相关的用户信息以及如何使用使用 LAS SDK 连接第三方的 SDK，并使用第三方 SDK 的各种功能。
+Auth is a sample of LAS SDK, and it relies on the basic module of LAS. This app shows the third-party login based on LAS SDK, how to save relative user info  and connect to third-party SDK with LAS SDK.  
 
-## 效果
+
+## Effect
 
 ![capture](capture/auth01.png)
 
@@ -12,14 +13,14 @@ Auth 是 LAS SDK 的一个 Sample，该项目依赖于 LAS 的基础模块。通
 
 ![capture](capture/auth03.png)
 
-## 前提条件
+## Precondition
 
-登录 [Facebook 开发者控制台](https://developers.facebook.com) 创建应用，获取 `FACEBOOK_APP_ID` 和 `FACEBOOK_SECRET_KEY`。
+Login [Facebook Developer Console](https://developers.facebook.com) to create an app and get `FACEBOOK_APP_ID` and `FACEBOOK_SECRET_KEY`.
 
-## 使用
+## How to Use
 
-1. 打开 Android Studio 或 IDEA ，点击菜单项 `File -> Open ` 选择 `setting.gradle` 文件导入工程
-2. 打开 `App.java` 文件，使用你自己的 `APP Id` ，`API KEY`，`FACEBOOK_APP_ID`，`FACEBOOK_SECRET_KEY` 替换该文件中已定义的同名常量。
-3. 打开 `strings.xml` 文件，替换 `app_id` 为你的 `FACEBOOK_APP_ID`
-4. 登录 LAS 控制台，选择 `Services` - `App Settings` - `User Authentication`，打开 `Allow Facebook authentication`，填入你的 `FACEBOOK_APP_ID` 到 `Facebook Application` 文本框中。
-5. 运行应用，点击 LOG IN 按钮，成功登录后会看到对应的用户信息。
+1. Open Android Studio or IDEA, click `File -> Open `, select and import `setting.gradle`.
+2. Open `App.java` and replace the defined constants with your own `APP Id`, `API KEY`, `FACEBOOK_APP_ID` and `FACEBOOK_SECRET_KEY`.
+3. Open `strings.xml` and replace `app_id` with `FACEBOOK_APP_ID`.
+4. Log in LAS Console, select `Services` - `App Settings` - `User Authentication`, enable `Allow Facebook authentication` and fill your `FACEBOOK_APP_ID` in `Facebook Application` textfield.
+5. Run the app and click the Log In button, then you can see the corresponding user info.

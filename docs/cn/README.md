@@ -1,8 +1,8 @@
-# LeapCloud-Sample-Auth-Android
+# MaxLeap-Sample-Auth-Android
 
 ## 简介
 
-Auth 是 LeapCloud SDK 的一个 Sample，该项目依赖于 LeapCloud 的基础模块。通过该应用你可以学习和了解基于 LeapCloud SDK 的第三方登录并保存相关的用户信息以及如何使用使用 LeapCloud SDK 连接第三方的 SDK，并使用第三方 SDK 的各种功能。
+Auth 是 MaxLeap SDK 的一个 Sample，该项目依赖于 MaxLeap 的基础模块。通过该应用你可以学习和了解基于 MaxLeap SDK 的第三方登录并保存相关的用户信息以及如何使用使用 MaxLeap SDK 连接第三方的 SDK，并使用第三方 SDK 的各种功能。
 
 ## 效果
 

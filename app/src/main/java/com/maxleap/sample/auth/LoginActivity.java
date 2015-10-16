@@ -1,4 +1,4 @@
-package as.leap.sample.auth;
+package com.maxleap.sample.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -6,15 +6,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 
+import com.maxleap.LogInCallback;
+import com.maxleap.MLFacebookUtils;
+import com.maxleap.MLLog;
+import com.maxleap.MLUser;
+import com.maxleap.exception.MLException;
+import com.maxleap.social.facebook.FacebookProvider;
+
 import java.util.Arrays;
 import java.util.List;
-
-import as.leap.LASFacebookUtils;
-import as.leap.LASLog;
-import as.leap.LASUser;
-import as.leap.callback.LogInCallback;
-import as.leap.exception.LASException;
-import as.leap.external.social.facebook.FacebookProvider;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -35,8 +35,8 @@ public class LoginActivity extends AppCompatActivity {
 
         // Check if there is a currently logged in user
         // and they are linked to a Facebook account.
-        LASUser currentUser = LASUser.getCurrentUser();
-        if ((currentUser != null) && LASFacebookUtils.isLinked(currentUser)) {
+        MLUser currentUser = MLUser.getCurrentUser();
+        if ((currentUser != null) && MLFacebookUtils.isLinked(currentUser)) {
             // Go to the user info activity
             showUserDetailsActivity();
         }
@@ -50,13 +50,13 @@ public class LoginActivity extends AppCompatActivity {
                 FacebookProvider.Permissions.User.BIRTHDAY,
                 FacebookProvider.Permissions.User.LOCATION);
 
-        LASFacebookUtils.logInInBackground(permissions, this,
-                new LogInCallback<LASUser>() {
+        MLFacebookUtils.logInInBackground(permissions, this,
+                new LogInCallback<MLUser>() {
                     @Override
-                    public void done(LASUser user, LASException e) {
+                    public void done(MLUser user, MLException e) {
                         if (e != null) {
                             e.printStackTrace();
-                            LASLog.t(e.getMessage());
+                            MLLog.t(e.getMessage());
                             return;
                         }
 

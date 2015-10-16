@@ -1,4 +1,4 @@
-package as.leap.sample.auth;
+package com.maxleap.sample.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -12,19 +12,19 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.widget.ProfilePictureView;
+import com.maxleap.MLFacebookUtils;
+import com.maxleap.MLLog;
+import com.maxleap.MLUser;
+import com.maxleap.MLUserManager;
+import com.maxleap.SaveCallback;
+import com.maxleap.exception.MLException;
+import com.maxleap.social.facebook.FacebookPlatform;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Date;
 
-import as.leap.LASFacebookUtils;
-import as.leap.LASLog;
-import as.leap.LASUser;
-import as.leap.LASUserManager;
-import as.leap.callback.SaveCallback;
-import as.leap.exception.LASException;
-import as.leap.external.social.facebook.FacebookPlatform;
 
 public class UserDetailsActivity extends AppCompatActivity {
 
@@ -59,10 +59,10 @@ public class UserDetailsActivity extends AppCompatActivity {
         });
 
         // Fetch Facebook user info if the session is active
-        LASUser user = LASUser.getCurrentUser();
+        MLUser user = MLUser.getCurrentUser();
 
-        if (LASFacebookUtils.isLinked(user)) {
-            FacebookPlatform platform = LASFacebookUtils.getPlatform();
+        if (MLFacebookUtils.isLinked(user)) {
+            FacebookPlatform platform = MLFacebookUtils.getPlatform();
             if (platform == null) return;
             AccessToken token = new AccessToken(
                     platform.getAccessToken(),
@@ -111,20 +111,20 @@ public class UserDetailsActivity extends AppCompatActivity {
                                 }
 
                                 // Save the user profile info in a user property
-                                LASUser currentUser = LASUser
+                                MLUser currentUser = MLUser
                                         .getCurrentUser();
                                 currentUser.put("profile", userProfile);
 
-                                LASUserManager.saveInBackground(currentUser,
+                                MLUserManager.saveInBackground(currentUser,
                                         new SaveCallback() {
 
                                             @Override
                                             public void done(
-                                                    LASException exception) {
+                                                    MLException exception) {
                                                 if (exception != null) {
                                                     exception.printStackTrace();
                                                 } else {
-                                                    LASLog.d(TAG,
+                                                    MLLog.d(TAG,
                                                             "finish saving");
                                                 }
                                             }
@@ -133,12 +133,12 @@ public class UserDetailsActivity extends AppCompatActivity {
                                 // Show the user info
                                 updateViewsWithProfileInfo();
                             } catch (JSONException e) {
-                                LASLog.e(TAG,
+                                MLLog.e(TAG,
                                         "Error parsing returned user data.");
                             }
 
                         } else if (response.getError() != null) {
-                            LASLog.e(TAG,
+                            MLLog.e(TAG,
                                     "Some other error: "
                                             + response.getError()
                                             .getErrorMessage());
@@ -150,7 +150,7 @@ public class UserDetailsActivity extends AppCompatActivity {
     }
 
     private void updateViewsWithProfileInfo() {
-        LASUser currentUser = LASUser.getCurrentUser();
+        MLUser currentUser = MLUser.getCurrentUser();
         if (currentUser.get("profile") != null) {
             JSONObject userProfile = currentUser.getJSONObject("profile");
             try {
@@ -190,7 +190,7 @@ public class UserDetailsActivity extends AppCompatActivity {
                     mUserRelationshipView.setText("");
                 }
             } catch (JSONException e) {
-                LASLog.d(TAG,
+                MLLog.d(TAG,
                         "Error parsing saved user data." + e.getMessage());
             }
 
@@ -199,7 +199,7 @@ public class UserDetailsActivity extends AppCompatActivity {
 
     private void onLogoutButtonClicked() {
         // Log the user out with LAS SDK
-        LASUser.logOut();
+        MLUser.logOut();
 
         // Log the user out with Facebook SDK
         LoginManager.getInstance().logOut();

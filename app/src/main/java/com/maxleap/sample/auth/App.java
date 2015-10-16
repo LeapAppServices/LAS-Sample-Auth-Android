@@ -1,12 +1,11 @@
-package as.leap.sample.auth;
+package com.maxleap.sample.auth;
 
 import android.app.Application;
 
 import com.facebook.FacebookSdk;
 import com.facebook.LoggingBehavior;
-
-import as.leap.LASConfig;
-import as.leap.LASFacebookUtils;
+import com.maxleap.MLFacebookUtils;
+import com.maxleap.MaxLeap;
 
 
 public class App extends Application {
@@ -22,14 +21,14 @@ public class App extends Application {
 
         if (APP_ID.startsWith("Replace") || API_KEY.startsWith("Replace")) {
             throw new IllegalArgumentException("Please replace with your app id and api key first before" +
-                    "using LAS SDK.");
+                    "using MaxLeap SDK.");
         }
 
-        LASConfig.setLogLevel(LASConfig.LOG_LEVEL_DEBUG);
-        LASConfig.initialize(this, APP_ID, API_KEY);
+        MaxLeap.setLogLevel(MaxLeap.LOG_LEVEL_DEBUG);
+        MaxLeap.initialize(this, APP_ID, API_KEY);
 
         // Set your Facebook App Id in strings.xml
-        LASFacebookUtils.initialize(FACEBOOK_APP_ID, FACEBOOK_SECRET_KEY);
+        MLFacebookUtils.initialize(FACEBOOK_APP_ID, FACEBOOK_SECRET_KEY);
 
         //  Using Facebook SDK
         FacebookSdk.sdkInitialize(this);

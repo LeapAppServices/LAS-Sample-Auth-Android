@@ -34,7 +34,7 @@
             android:value="@string/app_id" />
 
         <meta-data
-            android:name="las_channel"
+            android:name="ml_channel"
             android:value="google_play" />
     </application>
 

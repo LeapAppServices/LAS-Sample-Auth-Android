@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:facebook="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -12,14 +11,13 @@
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
-        <com.facebook.login.widget.ProfilePictureView
+        <ImageView
             android:id="@+id/userProfilePicture"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="128dp"
+            android:layout_height="128dp"
             android:layout_gravity="center"
             android:gravity="center_horizontal"
-            facebook:com_facebook_preset_size="small"
-            />
+            android:scaleType="centerInside" />
 
         <TextView
             android:id="@+id/userName"
@@ -37,12 +35,12 @@
         android:layout_marginLeft="5dp"
         android:layout_marginRight="5dp"
         android:layout_marginTop="20dp"
-        android:background="@drawable/table_round_shape"
         android:gravity="center_horizontal">
 
         <TableRow>
 
             <TextView
+                android:id="@+id/label1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
@@ -52,7 +50,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/userLocation"
+                android:id="@+id/text1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -75,6 +73,7 @@
         <TableRow>
 
             <TextView
+                android:id="@+id/label2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
@@ -84,7 +83,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/userGender"
+                android:id="@+id/text2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -107,6 +106,7 @@
         <TableRow>
 
             <TextView
+                android:id="@+id/label3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
@@ -116,7 +116,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/userDateOfBirth"
+                android:id="@+id/text3"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -139,6 +139,7 @@
         <TableRow>
 
             <TextView
+                android:id="@+id/label4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="right"
@@ -148,7 +149,7 @@
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/userRelationship"
+                android:id="@+id/text4"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
@@ -163,7 +164,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="100dp"
-        android:background="@drawable/button_login"
         android:text="@string/logout"
         android:textColor="#fff"
         android:textStyle="bold" />

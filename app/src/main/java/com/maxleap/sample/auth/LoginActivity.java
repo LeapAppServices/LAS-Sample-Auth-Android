@@ -3,79 +3,65 @@ package com.maxleap.sample.auth;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 
-import com.maxleap.LogInCallback;
-import com.maxleap.MLFacebookUtils;
-import com.maxleap.MLLog;
 import com.maxleap.MLUser;
-import com.maxleap.exception.MLException;
-import com.maxleap.social.facebook.FacebookProvider;
-
-import java.util.Arrays;
-import java.util.List;
+import com.maxleap.MaxLeap;
+import com.maxleap.sample.auth.platforms.FacebookInterfaces;
+import com.maxleap.sample.auth.platforms.SocialInterfaces;
+import com.maxleap.sample.auth.platforms.TwitterInterfaces;
+import com.maxleap.sample.auth.platforms.WechatInterfaces;
+import com.maxleap.sample.auth.platforms.WeiboInterfaces;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String TAG = LoginActivity.class.getSimpleName();
+    private SocialInterfaces currentInterfaces;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.main);
 
-        findViewById(R.id.loginButton).setOnClickListener(new View.OnClickListener() {
+        Button facebookLoginButton = (Button) findViewById(R.id.facebookLoginButton);
+        Button twitterLoginButton = (Button) findViewById(R.id.twitterLoginButton);
+        Button weiboLoginButton = (Button) findViewById(R.id.weiboLoginButton);
+        Button wechatLoginButton = (Button) findViewById(R.id.wechatLoginButton);
+
+        if (App.REGION.endsWith(MaxLeap.REGION_CN)) {
+            facebookLoginButton.setVisibility(View.GONE);
+            twitterLoginButton.setVisibility(View.GONE);
+        } else {
+            weiboLoginButton.setVisibility(View.GONE);
+            wechatLoginButton.setVisibility(View.GONE);
+        }
+
+        facebookLoginButton.setOnClickListener(onLoginListener(new FacebookInterfaces(), UserDetailsActivity.FACEBOOK));
+        twitterLoginButton.setOnClickListener(onLoginListener(new TwitterInterfaces(), UserDetailsActivity.TWITTER));
+        weiboLoginButton.setOnClickListener(onLoginListener(new WeiboInterfaces(), UserDetailsActivity.WEIBO));
+        wechatLoginButton.setOnClickListener(onLoginListener(new WechatInterfaces(), UserDetailsActivity.WECHAT));
+    }
+
+    private View.OnClickListener onLoginListener(final SocialInterfaces interfaces, final int type) {
+        return new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onLoginButtonClicked();
+                currentInterfaces = interfaces;
+                MLUser currentUser = MLUser.getCurrentUser();
+                if (interfaces.isLinked(currentUser)) {
+                    interfaces.showDetailActivity(LoginActivity.this, type);
+                    return;
+                }
+                interfaces.onLoginButtonClicked(LoginActivity.this, type);
             }
-        });
+        };
+    }
 
-        // Check if there is a currently logged in user
-        // and they are linked to a Facebook account.
-        MLUser currentUser = MLUser.getCurrentUser();
-        if ((currentUser != null) && MLFacebookUtils.isLinked(currentUser)) {
-            // Go to the user info activity
-            showUserDetailsActivity();
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (currentInterfaces != null) {
+            currentInterfaces.onActivityResult(requestCode, resultCode, data);
         }
-    }
-
-    private void onLoginButtonClicked() {
-
-        List<String> permissions = Arrays.asList("public_profile",
-                FacebookProvider.Permissions.User.ABOUT_ME,
-                FacebookProvider.Permissions.User.RELATIONSHIPS,
-                FacebookProvider.Permissions.User.BIRTHDAY,
-                FacebookProvider.Permissions.User.LOCATION);
-
-        MLFacebookUtils.logInInBackground(permissions, this,
-                new LogInCallback<MLUser>() {
-                    @Override
-                    public void done(MLUser user, MLException e) {
-                        if (e != null) {
-                            e.printStackTrace();
-                            MLLog.t(e.getMessage());
-                            return;
-                        }
-
-                        if (user.isNew()) {
-                            Log.d(TAG,
-                                    "User signed up and logged in through Facebook!");
-                            showUserDetailsActivity();
-                        } else {
-                            Log.d(TAG,
-                                    "User logged in through Facebook!");
-                            showUserDetailsActivity();
-                        }
-                    }
-                });
-    }
-
-    private void showUserDetailsActivity() {
-        Intent intent = new Intent(this, UserDetailsActivity.class);
-        startActivity(intent);
-        finish();
     }
 }

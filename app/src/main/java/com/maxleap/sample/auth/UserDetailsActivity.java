@@ -1,41 +1,44 @@
 package com.maxleap.sample.auth;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.util.Pair;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.facebook.AccessToken;
-import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
-import com.facebook.login.LoginManager;
-import com.facebook.login.widget.ProfilePictureView;
-import com.maxleap.MLFacebookUtils;
-import com.maxleap.MLLog;
+import com.bumptech.glide.Glide;
 import com.maxleap.MLUser;
-import com.maxleap.MLUserManager;
-import com.maxleap.SaveCallback;
-import com.maxleap.exception.MLException;
-import com.maxleap.social.facebook.FacebookPlatform;
-
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.util.Date;
+import com.maxleap.sample.auth.platforms.FacebookInterfaces;
+import com.maxleap.sample.auth.platforms.SocialInterfaces;
+import com.maxleap.sample.auth.platforms.TwitterInterfaces;
+import com.maxleap.sample.auth.platforms.WechatInterfaces;
+import com.maxleap.sample.auth.platforms.WeiboInterfaces;
 
 
 public class UserDetailsActivity extends AppCompatActivity {
 
     private static final String TAG = UserDetailsActivity.class.getSimpleName();
 
-    private ProfilePictureView mUserProfilePictureView;
-    private TextView mUserNameView;
-    private TextView mUserLocationView;
-    private TextView mUserGenderView;
-    private TextView mUserDateOfBirthView;
-    private TextView mUserRelationshipView;
+    public static final String EXTRA_TYPE = "type";
+
+    public static final int FACEBOOK = 0;
+    public static final int TWITTER = 1;
+    public static final int WEIBO = 2;
+    public static final int WECHAT = 3;
+
+    private ImageView mUserProfilePicture;
+    private TextView mUsernameView;
+    private TextView mLabel1;
+    private TextView mLabel2;
+    private TextView mLabel3;
+    private TextView mLabel4;
+    private TextView mText1;
+    private TextView mText2;
+    private TextView mText3;
+    private TextView mText4;
+    private SocialInterfaces interfaces;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,176 +46,105 @@ public class UserDetailsActivity extends AppCompatActivity {
 
         setContentView(R.layout.userdetails);
 
-        mUserProfilePictureView = (ProfilePictureView) findViewById(R.id.userProfilePicture);
-        mUserNameView = (TextView) findViewById(R.id.userName);
-        mUserLocationView = (TextView) findViewById(R.id.userLocation);
-        mUserGenderView = (TextView) findViewById(R.id.userGender);
-        mUserDateOfBirthView = (TextView) findViewById(R.id.userDateOfBirth);
-        mUserRelationshipView = (TextView) findViewById(R.id.userRelationship);
+        mUserProfilePicture = (ImageView) findViewById(R.id.userProfilePicture);
+        mUsernameView = (TextView) findViewById(R.id.userName);
+
+        mLabel1 = (TextView) findViewById(R.id.label1);
+        mLabel2 = (TextView) findViewById(R.id.label2);
+        mLabel3 = (TextView) findViewById(R.id.label3);
+        mLabel4 = (TextView) findViewById(R.id.label4);
+
+        mText1 = (TextView) findViewById(R.id.text1);
+        mText2 = (TextView) findViewById(R.id.text2);
+        mText3 = (TextView) findViewById(R.id.text3);
+        mText4 = (TextView) findViewById(R.id.text4);
+
+        int type = getIntent().getIntExtra(EXTRA_TYPE, FACEBOOK);
+        switch (type) {
+            case FACEBOOK:
+                interfaces = new FacebookInterfaces();
+                break;
+            case WEIBO:
+                interfaces = new WeiboInterfaces();
+                break;
+            case TWITTER:
+                interfaces = new TwitterInterfaces();
+                break;
+            case WECHAT:
+                interfaces = new WechatInterfaces();
+                break;
+        }
 
         Button logoutButton = (Button) findViewById(R.id.logoutButton);
         logoutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onLogoutButtonClicked();
+                interfaces.onLogoutButtonClicked(UserDetailsActivity.this);
             }
         });
 
-        // Fetch Facebook user info if the session is active
+        // Fetch Social user info if the session is active
         MLUser user = MLUser.getCurrentUser();
 
-        if (MLFacebookUtils.isLinked(user)) {
-            FacebookPlatform platform = MLFacebookUtils.getPlatform();
-            if (platform == null) return;
-            AccessToken token = new AccessToken(
-                    platform.getAccessToken(),
-                    platform.getApplicationId(),
-                    platform.getPlatformId(),
-                    null,
-                    null,
-                    null,
-                    new Date(Long.valueOf(platform.getExpires())),
-                    null
-            );
-            makeMeRequest(token);
-        }
-    }
-
-    private void makeMeRequest(AccessToken accessToken) {
-        GraphRequest request = GraphRequest.newMeRequest(accessToken,
-                new GraphRequest.GraphJSONObjectCallback() {
-                    @Override
-                    public void onCompleted(JSONObject user, GraphResponse response) {
-                        if (user != null) {
-                            // Create a JSON object to hold the profile info
-                            JSONObject userProfile = new JSONObject();
-                            try {
-                                System.out.println(user);
-
-                                // Populate the JSON object
-                                userProfile.put("facebookId", user.optString("id"));
-                                userProfile.put("name", user.optString("name"));
-                                if (user.optJSONObject("location") != null) {
-                                    userProfile.put("location", user.optJSONObject("location").optString("name"));
-                                }
-                                if (user.optString("gender") != null) {
-                                    userProfile.put("gender",
-                                            user.optString("gender"));
-                                }
-                                if (user.optString("birthday") != null) {
-                                    userProfile.put("birthday",
-                                            user.optString("birthday"));
-                                }
-                                if (user.optString("relationship_status") != null) {
-                                    userProfile
-                                            .put("relationship_status",
-                                                    user
-                                                            .optString("relationship_status"));
-                                }
-
-                                // Save the user profile info in a user property
-                                MLUser currentUser = MLUser
-                                        .getCurrentUser();
-                                currentUser.put("profile", userProfile);
-
-                                MLUserManager.saveInBackground(currentUser,
-                                        new SaveCallback() {
-
-                                            @Override
-                                            public void done(
-                                                    MLException exception) {
-                                                if (exception != null) {
-                                                    exception.printStackTrace();
-                                                } else {
-                                                    MLLog.d(TAG,
-                                                            "finish saving");
-                                                }
-                                            }
-                                        });
-
-                                // Show the user info
-                                updateViewsWithProfileInfo();
-                            } catch (JSONException e) {
-                                MLLog.e(TAG,
-                                        "Error parsing returned user data.");
+        if (interfaces.isLinked(user)) {
+            interfaces.requestMe(this, new RequestMeCallback() {
+                @Override
+                public void onSuccess(final String avatar,
+                                      final String name,
+                                      final Pair<String, String> p1,
+                                      final Pair<String, String> p2,
+                                      final Pair<String, String> p3,
+                                      final Pair<String, String> p4) {
+                    mUserProfilePicture.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (avatar != null) {
+                                Glide.with(UserDetailsActivity.this)
+                                        .load(avatar)
+                                        .into(mUserProfilePicture);
                             }
-
-                        } else if (response.getError() != null) {
-                            MLLog.e(TAG,
-                                    "Some other error: "
-                                            + response.getError()
-                                            .getErrorMessage());
+                            if (name != null) {
+                                mUsernameView.setText(name);
+                            } else {
+                                mUsernameView.setText("");
+                            }
+                            if (p1 != null) {
+                                mLabel1.setText(p1.first);
+                                mText1.setText(p1.second);
+                            } else {
+                                mLabel1.setVisibility(View.GONE);
+                                mText1.setVisibility(View.GONE);
+                            }
+                            if (p2 != null) {
+                                mLabel2.setText(p2.first);
+                                mText2.setText(p2.second);
+                            } else {
+                                mLabel2.setVisibility(View.GONE);
+                                mText2.setVisibility(View.GONE);
+                            }
+                            if (p3 != null) {
+                                mLabel3.setText(p3.first);
+                                mText3.setText(p3.second);
+                            } else {
+                                mLabel3.setVisibility(View.GONE);
+                                mText3.setVisibility(View.GONE);
+                            }
+                            if (p4 != null) {
+                                mLabel4.setText(p4.first);
+                                mText4.setText(p4.second);
+                            } else {
+                                mLabel4.setVisibility(View.GONE);
+                                mText4.setVisibility(View.GONE);
+                            }
                         }
-                    }
-                });
-        request.executeAsync();
+                    });
+                }
 
-    }
-
-    private void updateViewsWithProfileInfo() {
-        MLUser currentUser = MLUser.getCurrentUser();
-        if (currentUser.get("profile") != null) {
-            JSONObject userProfile = currentUser.getJSONObject("profile");
-            try {
-                if (userProfile.has("facebookId")) {
-                    String facebookId = userProfile.get("facebookId")
-                            .toString();
-                    mUserProfilePictureView.setProfileId(facebookId);
-                } else {
-                    // Show the default, blank user profile picture
-                    mUserProfilePictureView.setProfileId(null);
+                @Override
+                public void onError(Exception e) {
+                    e.printStackTrace();
                 }
-                if (userProfile.has("name")) {
-                    mUserNameView.setText(userProfile.getString("name"));
-                } else {
-                    mUserNameView.setText("");
-                }
-                if (userProfile.has("location")) {
-                    mUserLocationView.setText(userProfile.getString("location"));
-                } else {
-                    mUserLocationView.setText("");
-                }
-                if (userProfile.has("gender")) {
-                    mUserGenderView.setText(userProfile.getString("gender"));
-                } else {
-                    mUserGenderView.setText("");
-                }
-                if (userProfile.has("birthday")) {
-                    mUserDateOfBirthView.setText(userProfile
-                            .getString("birthday"));
-                } else {
-                    mUserDateOfBirthView.setText("");
-                }
-                if (userProfile.has("relationship_status")) {
-                    mUserRelationshipView.setText(userProfile
-                            .getString("relationship_status"));
-                } else {
-                    mUserRelationshipView.setText("");
-                }
-            } catch (JSONException e) {
-                MLLog.d(TAG,
-                        "Error parsing saved user data." + e.getMessage());
-            }
-
+            });
         }
-    }
-
-    private void onLogoutButtonClicked() {
-        // Log the user out with LAS SDK
-        MLUser.logOut();
-
-        // Log the user out with Facebook SDK
-        LoginManager.getInstance().logOut();
-
-        finish();
-
-        // Go to the login view
-        startLoginActivity();
-    }
-
-    private void startLoginActivity() {
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
     }
 }
